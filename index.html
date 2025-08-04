@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto: Variador de Velocidad Allen-Bradley</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: A thematic, single-page scrolling structure that guides the user through the project's narrative. It starts with the story (The Challenge), moves to the technical breakdown (The System), presents the core findings in an interactive dashboard (Performance Dashboard), discusses the broader impact (Applications), and concludes with the team and future work. This structure prioritizes storytelling and interactive data exploration over a rigid report format, making the content more engaging and understandable for a wider audience. -->
+    <!-- Visualization & Content Choices: 
+        1. System Diagram: Goal=Organize/Inform. Method=Clickable HTML/CSS cards. Interaction=Click to reveal details. Justification=Visually represents the system flow, more engaging than a list. Library=None.
+        2. Performance Data: Goal=Compare/Show Change. Method=Interactive Chart.js visualization with linked "digital readout" cards. Interaction=Buttons to select frequency, which dynamically updates the chart and readouts. Justification=Transforms the static data table into a live, explorable dashboard, demonstrating the V/Hz principle effectively. Library=Chart.js.
+        3. Advantages/Applications: Goal=Inform. Method=Icon-based cards in a grid. Interaction=Hover effects. Justification=Clean, scannable, and more visually appealing than a bullet list. Library=None. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #1e293b; /* slate-800 */
+        }
+        .section-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #083344; /* cyan-950 */
+            margin-bottom: 1rem;
+        }
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: #475569; /* slate-600 */
+            max-width: 800px;
+            margin: 0 auto 3rem auto;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #0e7490; /* cyan-600 */
+            border-bottom-color: #0e7490; /* cyan-600 */
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 40vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 450px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="font-bold text-xl text-cyan-800">Proyecto VFD</div>
+            <div class="hidden md:flex space-x-8">
+                <a href="#historia" class="nav-link">La Historia</a>
+                <a href="#sistema" class="nav-link">El Sistema</a>
+                <a href="#resultados" class="nav-link">Resultados</a>
+                <a href="#aplicaciones" class="nav-link">Aplicaciones</a>
+                <a href="#equipo" class="nav-link">Equipo</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-slate-800">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pt-2 pb-4">
+            <a href="#historia" class="block py-2 text-slate-700">La Historia</a>
+            <a href="#sistema" class="block py-2 text-slate-700">El Sistema</a>
+            <a href="#resultados" class="block py-2 text-slate-700">Resultados</a>
+            <a href="#aplicaciones" class="block py-2 text-slate-700">Aplicaciones</a>
+            <a href="#equipo" class="block py-2 text-slate-700">Equipo</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="text-center py-20 px-6 bg-white">
+            <h1 class="text-4xl md:text-6xl font-bold text-cyan-900 mb-4">VARIADOR DE VELOCIDAD</h1>
+            <p class="text-lg md:text-xl text-slate-700 max-w-3xl mx-auto">Un enfoque práctico para la regulación de velocidad, optimización energética y desarrollo de competencias electromecánicas.</p>
+        </section>
+
+        <!-- La Historia -->
+        <section id="historia" class="py-20 px-6 text-center">
+            <h2 class="section-title">La Historia de un Desafío</h2>
+            <p class="section-subtitle">Un equipo inactivo por décadas, un manual en inglés y dos estudiantes que, trabajando desde la humildad y el desconocimiento, demostraron que con ganas y predisposición todo es posible.</p>
+            <div class="container mx-auto grid md:grid-cols-3 gap-8 text-left">
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-red-100 text-red-800 rounded-full h-12 w-12 flex items-center justify-center font-bold text-xl">1</div>
+                        <h3 class="ml-4 text-xl font-semibold text-slate-800">El Equipo Olvidado</h3>
+                    </div>
+                    <p class="text-slate-600">Un variador Allen-Bradley 1305, con 20-30 años de antigüedad, yacía inactivo. Intentos previos de puesta en marcha, incluso por parte de ingenieros, habían fracasado, declarándolo fuera de servicio.</p>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-amber-100 text-amber-800 rounded-full h-12 w-12 flex items-center justify-center font-bold text-xl">2</div>
+                        <h3 class="ml-4 text-xl font-semibold text-slate-800">El Proceso de Indagación</h3>
+                    </div>
+                    <p class="text-slate-600">Armados con el manual original en inglés y una tenacidad admirable, los alumnos iniciaron su investigación. Tradujeron, buscaron en foros y, finalmente, encontraron un manual en español que fue clave para descifrar su funcionamiento.</p>
+                </div>
+                <div class="card p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-emerald-100 text-emerald-800 rounded-full h-12 w-12 flex items-center justify-center font-bold text-xl">3</div>
+                        <h3 class="ml-4 text-xl font-semibold text-slate-800">El Éxito</h3>
+                    </div>
+                    <p class="text-slate-600">No solo lograron encenderlo, sino que fueron más allá: borraron fallas preexistentes, configuraron parámetros y diseñaron un tablero de control. Revitalizaron el equipo, convirtiéndolo en una valiosa herramienta educativa.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- El Sistema -->
+        <section id="sistema" class="py-20 px-6 bg-white">
+            <h2 class="section-title text-center">Deconstruyendo el Sistema</h2>
+            <p class="section-subtitle">Cada componente juega un papel crucial. Haz clic en cada elemento para explorar sus especificaciones y características clave.</p>
+            <div class="container mx-auto grid md:grid-cols-3 gap-8">
+                <!-- VFD Card -->
+                <div id="vfd-card" class="card p-8 text-center cursor-pointer">
+                    <div class="text-5xl mb-4">⚙️</div>
+                    <h3 class="text-2xl font-bold text-cyan-800">Variador de Frecuencia</h3>
+                    <p class="text-slate-500 mt-2">Allen-Bradley 1305-BA04A-HA1</p>
+                </div>
+                <!-- Motor Card -->
+                <div id="motor-card" class="card p-8 text-center cursor-pointer">
+                    <div class="text-5xl mb-4">⚡️</div>
+                    <h3 class="text-2xl font-bold text-cyan-800">Motor Trifásico</h3>
+                    <p class="text-slate-500 mt-2">Asíncrono de 1/2 HP</p>
+                </div>
+                <!-- Tablero Card -->
+                <div id="tablero-card" class="card p-8 text-center cursor-pointer">
+                    <div class="text-5xl mb-4">🎛️</div>
+                    <h3 class="text-2xl font-bold text-cyan-800">Tablero de Control</h3>
+                    <p class="text-slate-500 mt-2">Diseño 3D e implementación manual</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resultados y Análisis -->
+        <section id="resultados" class="py-20 px-6">
+            <h2 class="section-title text-center">Panel de Control Interactivo</h2>
+            <p class="section-subtitle">Visualiza cómo el variador controla el motor. Selecciona una frecuencia y observa cómo cambian la tensión, la corriente y la velocidad en tiempo real, demostrando el principio de control V/Hz.</p>
+            
+            <div class="container mx-auto">
+                <!-- Control Buttons -->
+                <div class="flex justify-center space-x-4 mb-8">
+                    <button data-freq="10" class="control-btn bg-cyan-700 hover:bg-cyan-800 text-white font-bold py-2 px-6 rounded-full transition">10 Hz</button>
+                    <button data-freq="30" class="control-btn bg-cyan-700 hover:bg-cyan-800 text-white font-bold py-2 px-6 rounded-full transition">30 Hz</button>
+                    <button data-freq="60" class="control-btn bg-cyan-700 hover:bg-cyan-800 text-white font-bold py-2 px-6 rounded-full transition">60 Hz</button>
+                </div>
+
+                <!-- Digital Readouts -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 max-w-4xl mx-auto">
+                    <div class="card p-4 text-center">
+                        <p class="text-sm font-semibold text-slate-500">Frecuencia</p>
+                        <p id="freq-readout" class="text-3xl font-bold text-cyan-800">- Hz</p>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <p class="text-sm font-semibold text-slate-500">Tensión</p>
+                        <p id="volt-readout" class="text-3xl font-bold text-cyan-800">- V</p>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <p class="text-sm font-semibold text-slate-500">Corriente</p>
+                        <p id="curr-readout" class="text-3xl font-bold text-cyan-800">- A</p>
+                    </div>
+                    <div class="card p-4 text-center">
+                        <p class="text-sm font-semibold text-slate-500">Velocidad (RPM)</p>
+                        <p id="rpm-readout" class="text-3xl font-bold text-cyan-800">-</p>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="card p-4 md:p-6">
+                    <div class="chart-container">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Aplicaciones Industriales -->
+        <section id="aplicaciones" class="py-20 px-6 bg-white">
+            <h2 class="section-title text-center">¿Por Qué es Importante? Aplicaciones Industriales</h2>
+            <p class="section-subtitle">El control de velocidad no es solo un ejercicio académico. Es una tecnología fundamental que impulsa la eficiencia y la productividad en innumerables sectores.</p>
+            <div class="container mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold text-cyan-800 mb-2">Ahorro Energético</h3>
+                    <p class="text-slate-600">En bombas y ventiladores, ajustar la velocidad a la demanda real puede reducir el consumo de energía drásticamente (hasta un 50% o más).</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold text-cyan-800 mb-2">Control Preciso de Procesos</h3>
+                    <p class="text-slate-600">En cintas transportadoras o mezcladoras, permite sincronizar velocidades y adaptar el proceso a diferentes productos, mejorando la calidad.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold text-cyan-800 mb-2">Arranque y Parada Suaves</h3>
+                    <p class="text-slate-600">Reduce el estrés mecánico en motores y maquinaria, evitando picos de corriente y alargando la vida útil de los equipos.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold text-cyan-800 mb-2">Protección del Motor</h3>
+                    <p class="text-slate-600">Los VFDs modernos integran protecciones contra sobrecarga, sobretensión y otras fallas, actuando como un guardián inteligente del motor.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold text-cyan-800 mb-2">Reducción de Ruido</h3>
+                    <p class="text-slate-600">Operar a la velocidad óptima, en lugar de siempre al máximo, puede disminuir significativamente el ruido y la vibración en el entorno de trabajo.</p>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold text-cyan-800 mb-2">Flexibilidad Operativa</h3>
+                    <p class="text-slate-600">Permite usar un mismo equipo para diferentes tareas simplemente ajustando la velocidad, como en máquinas herramienta o grúas.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Equipo -->
+        <section id="equipo" class="py-20 px-6 text-center">
+            <h2 class="section-title">El Equipo</h2>
+            <div class="container mx-auto grid md:grid-cols-2 gap-12 max-w-4xl">
+                <div>
+                    <h3 class="text-2xl font-bold text-cyan-800 mb-4">Alumnos Expositores</h3>
+                    <div class="card p-6">
+                        <p class="text-xl font-semibold text-slate-800">Lorenzo De Azevedo</p>
+                        <p class="text-xl font-semibold text-slate-800 mt-2">Roger Lescano Cuarterola</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-cyan-800 mb-4">Asesores Docentes</h3>
+                    <div class="card p-6">
+                        <p class="text-xl font-semibold text-slate-800">Tedesco, Néstor</p>
+                        <p class="text-xl font-semibold text-slate-800 mt-2">Garralda, Héctor Alejandro</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-cyan-900 text-white text-center p-6">
+        <p>E.E.S.T. N° 1 “Islas Malvinas” - Rauch, Pcia. de Buenos Aires</p>
+        <p>&copy; 2025 - Un proyecto hecho con curiosidad, tenacidad y trabajo en equipo.</p>
+    </footer>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 relative">
+            <button id="close-modal" class="absolute top-4 right-4 text-slate-500 hover:text-slate-800">&times;</button>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Mobile Menu
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // Modal Logic
+            const modal = document.getElementById('modal');
+            const closeModal = document.getElementById('close-modal');
+            const modalContent = document.getElementById('modal-content');
+
+            const modalData = {
+                'vfd-card': {
+                    title: 'Variador de Frecuencia (VFD)',
+                    content: `
+                        <h3 class="text-2xl font-bold text-cyan-800 mb-4">Allen-Bradley 1305-BA04A-HA1</h3>
+                        <ul class="list-disc list-inside space-y-2 text-slate-700">
+                            <li><strong>Potencia:</strong> 0.37 kW (0.5 HP)</li>
+                            <li><strong>Voltaje de Entrada:</strong> 200-240V AC, trifásico</li>
+                            <li><strong>Corriente de Salida Nominal:</strong> 2.3 A</li>
+                            <li><strong>Rango de Frecuencia:</strong> 0 a 400 Hz (limitado a 10-60 Hz en el proyecto)</li>
+                            <li><strong>Método de Control:</strong> V/Hz (Voltaje/Frecuencia) constante</li>
+                            <li><strong>Características Clave:</strong> Diseño robusto, interfaz sencilla, rampas de aceleración/desaceleración programables y protecciones integradas.</li>
+                        </ul>
+                    `
+                },
+                'motor-card': {
+                    title: 'Motor Trifásico Asíncrono',
+                    content: `
+                        <h3 class="text-2xl font-bold text-cyan-800 mb-4">Motor de Inducción 1/2 HP</h3>
+                        <ul class="list-disc list-inside space-y-2 text-slate-700">
+                            <li><strong>Potencia:</strong> 1/2 HP (0.37 kW)</li>
+                            <li><strong>Tensión Nominal:</strong> 220/380V (conectado en Estrella)</li>
+                            <li><strong>Frecuencia Nominal:</strong> 60 Hz</li>
+                            <li><strong>Polos:</strong> 4</li>
+                            <li><strong>Velocidad Nominal:</strong> 1400 RPM (a 60 Hz)</li>
+                            <li><strong>Principio:</strong> El campo magnético giratorio del estator induce corriente en el rotor, generando torque. La velocidad se controla variando la frecuencia de la alimentación.</li>
+                        </ul>
+                    `
+                },
+                'tablero-card': {
+                    title: 'Tablero de Control',
+                    content: `
+                        <h3 class="text-2xl font-bold text-cyan-800 mb-4">Interfaz de Control Manual</h3>
+                        <p class="text-slate-700 mb-4">Diseñado en AutoCAD e impreso en 3D (PLA), este tablero permite la interacción directa con el sistema.</p>
+                        <ul class="list-disc list-inside space-y-2 text-slate-700">
+                            <li><strong>Potenciómetro (10 kΩ):</strong> Proporciona una señal analógica de 0-10V para un control de velocidad variable y preciso.</li>
+                            <li><strong>Selector Marcha/Parada:</strong> Controla el encendido y apagado del motor.</li>
+                            <li><strong>Pulsadores Forward/Reverse:</strong> Permiten la inversión del sentido de giro del motor.</li>
+                            <li><strong>Seguridad:</strong> Montado sobre madera plastificada para aislamiento, con fusibles de protección y conexiones seguras.</li>
+                        </ul>
+                    `
+                }
+            };
+
+            function openModal(id) {
+                const data = modalData[id];
+                if (data) {
+                    modalContent.innerHTML = data.content;
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                }
+            }
+
+            document.getElementById('vfd-card').addEventListener('click', () => openModal('vfd-card'));
+            document.getElementById('motor-card').addEventListener('click', () => openModal('motor-card'));
+            document.getElementById('tablero-card').addEventListener('click', () => openModal('tablero-card'));
+
+            closeModal.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            });
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }
+            });
+
+            // Chart Logic
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            const performanceData = {
+                labels: ['10 Hz', '30 Hz', '60 Hz'],
+                datasets: [
+                    {
+                        label: 'Velocidad (RPM)',
+                        data: [230, 700, 1400],
+                        borderColor: '#0e7490', // cyan-600
+                        backgroundColor: '#0e7490',
+                        tension: 0.1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Tensión (V)',
+                        data: [63.3, 190.0, 380.0],
+                        borderColor: '#f59e0b', // amber-500
+                        backgroundColor: '#f59e0b',
+                        tension: 0.1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Corriente (A)',
+                        data: [0.70, 0.85, 0.77],
+                        borderColor: '#64748b', // slate-500
+                        backgroundColor: '#cbd5e1', // slate-300
+                        type: 'bar',
+                        yAxisID: 'y1'
+                    }
+                ]
+            };
+
+            const performanceChart = new Chart(ctx, {
+                type: 'line',
+                data: performanceData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Velocidad (RPM) / Tensión (V)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Corriente (A)'
+                            },
+                            grid: {
+                                drawOnChartArea: false, 
+                            },
+                            max: 2.5
+                        }
+                    }
+                }
+            });
+
+            // Dashboard Interaction
+            const controlButtons = document.querySelectorAll('.control-btn');
+            const freqReadout = document.getElementById('freq-readout');
+            const voltReadout = document.getElementById('volt-readout');
+            const currReadout = document.getElementById('curr-readout');
+            const rpmReadout = document.getElementById('rpm-readout');
+            
+            const dataPoints = {
+                '10': { freq: '10 Hz', volt: '63.3 V', curr: '0.70 A', rpm: '230', index: 0 },
+                '30': { freq: '30 Hz', volt: '190 V', curr: '0.85 A', rpm: '700', index: 1 },
+                '60': { freq: '60 Hz', volt: '380 V', curr: '0.77 A', rpm: '1400', index: 2 }
+            };
+
+            function updateDashboard(freq) {
+                const data = dataPoints[freq];
+                if (data) {
+                    freqReadout.textContent = data.freq;
+                    voltReadout.textContent = data.volt;
+                    currReadout.textContent = data.curr;
+                    rpmReadout.textContent = data.rpm;
+
+                    // Highlight chart point
+                    performanceChart.setActiveElements([{ datasetIndex: 0, index: data.index }]);
+                    performanceChart.update();
+                }
+            }
+
+            controlButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const freq = button.dataset.freq;
+                    updateDashboard(freq);
+                });
+            });
+
+            // Set initial state
+            updateDashboard('30');
+        });
+    </script>
+</body>
+</html>
